@@ -1,4 +1,4 @@
-const MinimalExpress = require('./app');
+const MinimalExpress = require('./core/server');
 const app = new MinimalExpress();
 
 app.use((req, res, next) => {
