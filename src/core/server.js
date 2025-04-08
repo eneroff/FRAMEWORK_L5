@@ -3,6 +3,15 @@ const Router = require('./router');
 const { parse } = require('querystring');
 const url = require('url');
 
+class ErrorHandler {
+  static handle(error, res) {
+    console.error('[Error]', error);
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end('Internal Server Error');
+  }
+}
+
 class MinimalExpress {
   constructor() {
     this.router = new Router();
@@ -36,7 +45,11 @@ class MinimalExpress {
   handleRequest(req, res) {
     this._bodyParser(req, () => {
       this._middlewareRunner(req, res, () => {
-        this.router.handle(req, res);
+        try {
+          this.router.handle(req, res);
+        } catch (err) {
+          ErrorHandler.handle(err, res);
+        }
       });
     });
   }
@@ -60,7 +73,11 @@ class MinimalExpress {
     const next = () => {
       if (index < this.middlewares.length) {
         const mw = this.middlewares[index++];
-        mw(req, res, next);
+        try {
+          mw(req, res, next);
+        } catch (err) {
+          ErrorHandler.handle(err, res);
+        }
       } else {
         done();
       }
